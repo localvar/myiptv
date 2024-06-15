@@ -10,15 +10,12 @@ const locale = ref(zhCN)
 <template>
   <el-config-provider :locale="locale">
     <el-container>
-      <el-header></el-header>
-      <el-container>
-        <el-aside width="70px">
+      <el-header>
           <MainMenu />
-        </el-aside>
+      </el-header>
         <el-main>
           <RouterView />
         </el-main>
-      </el-container>
       <el-footer>Footer</el-footer>
     </el-container>
   </el-config-provider>

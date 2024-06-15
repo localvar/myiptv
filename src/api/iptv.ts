@@ -39,3 +39,23 @@ export const dropRelayConnection = (addr: string) => {
 export const dropRelayClient = (addr: string, clientAddr: string) => {
 	return axios.delete(`/api/relays/${addr}/${clientAddr}`);
 }
+
+export type Programme = {
+	title: string;
+	start: Date;
+	end: Date;
+	desc: string;
+}
+
+export const getEpg = (channel: string) => {
+	return axios.get<any[]>(`/api/epg/${channel}`).then(res => {
+		return res.data.map(p => {
+			return {
+				title: p.title,
+				start: new Date(p.start),
+				end: new Date(p.end),
+				desc: p.desc
+			} as Programme
+		})
+	});
+}
