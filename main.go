@@ -71,7 +71,7 @@ func main() {
 
 	http.HandleFunc("GET /api/relays", apiListRelays)
 	http.HandleFunc("DELETE /api/relays/{addr}", apiCloseRelayConnection)
-	http.HandleFunc("DELETE /api/relays/{maddr}/{caddr}", apiCloseRelayClient)
+	http.HandleFunc("DELETE /api/relays/{addr}/{client}", apiCloseRelayClient)
 
 	// for IPTV clients
 	http.HandleFunc("GET /iptv/relay/{addr}", iptvRelay)

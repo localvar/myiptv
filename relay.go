@@ -162,7 +162,7 @@ func (mc *mcastConn) closeClient(addr string) {
 	mc.clientLock.Lock()
 	defer mc.clientLock.Unlock()
 	for _, rc := range mc.clients {
-		if rc.addr == addr {
+		if rc != nil && rc.addr == addr {
 			rc.cancel()
 			break
 		}
@@ -173,7 +173,7 @@ func (mc *mcastConn) removeClient(addr string) {
 	mc.clientLock.Lock()
 	defer mc.clientLock.Unlock()
 	for i, rc := range mc.clients {
-		if rc.addr == addr {
+		if rc != nil && rc.addr == addr {
 			mc.clients[i] = nil
 			break
 		}
@@ -412,9 +412,9 @@ func apiCloseRelayConnection(w http.ResponseWriter, r *http.Request) {
 
 // apiCloseRelayClient closes a relay client of a relay connection
 func apiCloseRelayClient(w http.ResponseWriter, r *http.Request) {
-	maddr := r.PathValue("maddr")
-	caddr := r.PathValue("caddr")
-	if v, ok := mcastConns.Load(maddr); ok {
-		v.(*mcastConn).closeClient(caddr)
+	addr := r.PathValue("addr")
+	client := r.PathValue("client")
+	if v, ok := mcastConns.Load(addr); ok {
+		v.(*mcastConn).closeClient(client)
 	}
 }

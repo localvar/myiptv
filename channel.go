@@ -76,10 +76,12 @@ func listChannelsInText(w http.ResponseWriter, _ *http.Request) {
 
 // iptvListChannels lists all IPTV channels in required format
 func iptvListChannels(w http.ResponseWriter, r *http.Request) {
-	format := r.URL.Query().Get("format")
-	if format = strings.ToLower(format); format == "m3u" || format == "m3u8" {
+	switch strings.ToLower(r.URL.Query().Get("fmt")) {
+	case "m3u", "m3u8":
 		listChannelsInM3U8(w, r)
-	} else {
+	case "", "txt", "text":
 		listChannelsInText(w, r)
+	default:
+		http.Error(w, "supported format", http.StatusBadRequest)
 	}
 }

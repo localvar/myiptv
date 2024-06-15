@@ -157,8 +157,6 @@ func updateEPG(force bool) error {
 }
 
 func iptvGetEPG(w http.ResponseWriter, r *http.Request) {
-	updateEPG(false)
-
 	ch := r.URL.Query().Get("ch")
 	if ch == "" {
 		http.Error(w, "missing channel name", http.StatusBadRequest)
@@ -176,9 +174,13 @@ func iptvGetEPG(w http.ResponseWriter, r *http.Request) {
 	}
 	end := start.AddDate(0, 0, 1)
 
+	updateEPG(false)
+
 	epgLock.Lock()
 	allProgs := epgs[ch]
 	epgLock.Unlock()
+
+	// TODO: format := r.URL.Query().Get("fmt")
 
 	type progJSONHelper struct {
 		Start string `json:"start"`
