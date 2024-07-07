@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-//go:embed webui/dist
+//go:embed all:webui/dist
 var website embed.FS
 
 var shutdown func(restart bool)
@@ -24,8 +24,9 @@ func run() {
 	srv := &http.Server{Addr: cfg.ServerAddr}
 
 	shutdown = func(restart bool) {
-		ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		srv.Shutdown(ctx)
+		cancel()
 		slog.Info("relay server stopped")
 		if restart {
 			run()
@@ -46,7 +47,7 @@ func run() {
 	slog.Info(
 		"relay server started",
 		slog.String("httpAddress", cfg.ServerAddr),
-		slog.String("multicastInterface", cfg.MulticastInterface),
+		slog.String("multicastInterface", cfg.McastIface),
 	)
 }
 
@@ -68,7 +69,7 @@ func main() {
 	http.HandleFunc("POST /api/restart", apiRestart)
 	http.HandleFunc("GET /api/interfaces-and-ips", apiListInterfacesAndIPs)
 
-	http.HandleFunc("GET /api/config", apigetConfig)
+	http.HandleFunc("GET /api/config", apiGetConfig)
 	http.HandleFunc("PUT /api/config", apiUpdateConfig)
 
 	http.HandleFunc("GET /api/channel-groups", apiListChannelGroups)

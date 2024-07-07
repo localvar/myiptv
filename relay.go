@@ -111,7 +111,7 @@ func (rb *relayBuffer) Release() {
 var relayBufPool = sync.Pool{
 	New: func() any {
 		rb := relayBuffer{}
-		rb.buf = make([]byte, 0, getConfig().MCastBufferSize)
+		rb.buf = make([]byte, 0, getConfig().McastPacketSize)
 		return &rb
 	},
 }
@@ -268,11 +268,11 @@ func mcastConnect(w http.ResponseWriter, r *http.Request) (*mcastConn, bool) {
 	udpAddr := net.UDPAddrFromAddrPort(ap)
 
 	cfg := getConfig()
-	iface, err := net.InterfaceByName(cfg.MulticastInterface)
+	iface, err := net.InterfaceByName(cfg.McastIface)
 	if err != nil {
 		slog.Error(
 			"failed to get network interface",
-			slog.String("interface", cfg.MulticastInterface),
+			slog.String("interface", cfg.McastIface),
 			slog.String("error", err.Error()),
 		)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -335,7 +335,7 @@ func iptvRelay(w http.ResponseWriter, r *http.Request) {
 		// in this case, must call addClient before receive, or the receive
 		// goroutine may exit immediately because there is no client
 		cfg := getConfig()
-		go mc.receive(cfg.MCastBufferSize, time.Second)
+		go mc.receive(cfg.McastPacketSize, time.Second)
 	}
 
 	w.Header().Set("Content-Type", "video/MP2T")

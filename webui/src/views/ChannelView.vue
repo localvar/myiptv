@@ -2,50 +2,75 @@
 	<a-row :gutter="10">
 		<a-col :span="14">
 			<a-tabs type="editable-card" @edit="onEditChannelGroup">
-				<a-tab-pane v-for="grp in groups" :tab="grp.name" :key="grp.name" closable>
+				<a-tab-pane v-for="(grp, i) in groups" :tab="grp.name" :key="i" closable>
 					<a-tabs tab-position="left">
-						<a-tab-pane v-for="ch in grp.channels" :tab="ch.name" :key="ch.name">
-							<a-form>
+						<a-tab-pane v-for="(ch, j) in grp.channels" :tab="ch.name" :key="j">
+							<a-row :gutter="10">
+								<a-col :span="12">
+									<a-form-item label="频道名称" :labelCol="{span: 6}">
+										<a-input v-model:value="ch.name" />
+									</a-form-item>
+									<a-form-item label="显示名称" :labelCol="{span: 6}">
+										<a-input v-model:value="ch.displayName" />
+									</a-form-item>
+									<a-form-item label="是否隐藏" :labelCol="{span: 6}">
+										<a-switch v-model:checked="ch.hide" />
+									</a-form-item>
+								</a-col>
+								<a-col :span="12">
+									<a-card style="width: 98%; height: 85%; background-color: lightgray;" shadow="never">
+										<img v-if="ch.logo" style="width: 100%; height: 100%" :src="ch.logo"
+											fit="scale-down" alt="无法加载台标" />
+									</a-card>
+								</a-col>
+							</a-row>
+
+							<a-form-item label="台标地址" :labelCol="{span: 3}">
+								<a-input v-model:value="ch.logo" />
+							</a-form-item>
+
+							<a-row :gutter="10" v-for="(_, i) in ch.sources">
+								<a-col :span="18">
+									<a-form-item :label="`节目源${i}`" :labelCol="{span: 4}">
+										<a-input v-model:value="ch.sources[i]" />
+									</a-form-item>
+								</a-col>
+								<a-col :span="6">
+									<a-button type="link" @click="onVerifySource(ch.sources[i])">测试</a-button>
+									<a-button type="link" danger @click="onDeleteSource(ch, i)">删除</a-button>
+								</a-col>
+							</a-row>
+
+							<a-row :gutter="10">
+								<a-col :span="18">
+									<a-form-item label="新节目源：" :labelCol="{span: 4}">
+										<a-input v-model:value="newSource" />
+									</a-form-item>
+								</a-col>
+								<a-col :span="6">
+									<a-button-group>
+										<a-button type="link" @click="onVerifySource(newSource)">测试</a-button>
+										<a-button type="link" @click="onAddSource(ch)">添加</a-button>
+									</a-button-group>
+								</a-col>
+							</a-row>
+						</a-tab-pane>
+					</a-tabs>
+				</a-tab-pane>
+			</a-tabs>
+		</a-col>
+		<a-col :span="10">
+			<a-affix :offset-top="120">
+				<MpegTsPlayer :src="source" width="98%" />
+			</a-affix>
+		</a-col>
+	</a-row>
+</template>
+
+<script setup lang="ts">
+/*
 								<a-row :gutter="10">
-									<a-col :span="12">
-										<a-form-item label="频道名称">
-											<a-input v-model:value="ch.name" />
-										</a-form-item>
-										<a-form-item label="显示名称">
-											<a-input v-model:value="ch.displayName" />
-										</a-form-item>
-										<a-form-item label="是否隐藏">
-											<a-switch v-model:checked="ch.hide" />
-										</a-form-item>
-									</a-col>
-									<a-col :span="12">
-										<a-card style="width: 98%; height: 85%; background-color: lightgray;" shadow="never">
-											<img v-if="ch.logo" style="width: 100%; height: 100%" :src="ch.logo"
-												fit="scale-down" alt="无法加载台标" />
-										</a-card>
-									</a-col>
-								</a-row>
-								<a-row>
-									<a-col :span="24">
-										<a-form-item label="台标地址">
-											<a-input v-model:value="ch.logo" />
-										</a-form-item>
-									</a-col>
-								</a-row>
-								<a-divider>节目源</a-divider>
-								<a-row :gutter="10" v-for="(_, i) in ch.sources">
-									<a-col :span="16">
-										<a-form-item>
-											<a-input v-model:value="ch.sources[i]" />
-										</a-form-item>
-									</a-col>
-									<a-col :span="8">
-										<a-button :icon="h(PlaySquareOutlined)" @click="onVerifySource(ch.sources[i])" />
-										<a-button :icon="h(DeleteOutlined)" @click="onDeleteSource(ch, i)" />
-									</a-col>
-								</a-row>
-								<a-row :gutter="10">
-									<a-col :span="16">
+									<a-col :span="18">
 										<a-form-item>
 											<a-input v-model:value="newSource" />
 										</a-form-item>
@@ -57,32 +82,23 @@
 										</a-button-group>
 									</a-col>
 								</a-row>
-							</a-form>
-						</a-tab-pane>
-					</a-tabs>
-				</a-tab-pane>
-			</a-tabs>
-		</a-col>
-		<a-col :span="10">
-			<MpegTsPlayer :src="source" width="100%" />
-		</a-col>
-	</a-row>
-</template>
-
-<script setup lang="ts">
-import { h, ref, onMounted } from 'vue';
-import { DeleteOutlined, PlaySquareOutlined, PlusSquareOutlined } from '@ant-design/icons-vue';
+								*/
+import { /*h,*/ ref, onMounted } from 'vue';
+// import { DeleteOutlined, PlaySquareOutlined, PlusSquareOutlined } from '@ant-design/icons-vue';
 import {App} from 'ant-design-vue';
 
 import { Channel, ChannelGroup, listChannelGroups } from '../api/iptv';
 import MpegTsPlayer from '../components/MpegTsPlayer.vue';
 // import Sortable from 'sortablejs';
 
+
 const groups = ref<ChannelGroup[]>([]);
 const newGroupName = ref('');
 const source = ref('');
 const newSource = ref('');
 const {modal} = App.useApp();
+
+// const selectedNode = ref<TreeNode>();
 
 listChannelGroups().then((data) => {
 	groups.value = data;
@@ -153,6 +169,7 @@ const onDeleteSource = (ch: Channel, idx: number) => {
 	ch.sources.splice(idx, 1);
 }
 
+/*
 const onMoveSource = (ch: Channel, idx: number, to: string) => {
 	switch (to) {
 		case 'top':
@@ -190,6 +207,7 @@ const onMoveSource = (ch: Channel, idx: number, to: string) => {
 			break;
 	}
 }
+*/
 
 const onAddSource = (ch: Channel) => {
 	if (!newSource.value) {
@@ -206,3 +224,9 @@ const onAddSource = (ch: Channel) => {
 }
 
 </script>
+
+<style scoped>
+.ant-form-item {
+	margin-bottom: 10;
+}
+</style>

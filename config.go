@@ -44,15 +44,15 @@ type Config struct {
 	// HTTP server address, including IP address and port
 	ServerAddr string `json:"serverAddr,omitempty"`
 
-	// name of the multicast interface
-	MulticastInterface string `json:"multicastInterface,omitempty"`
-
 	// EPG URL, default is 'http://epg.51zmt.top:8000/e.xml'
 	EPGURL string `json:"epgURL,omitempty"`
 
-	// MCastBufferSize is the buffer size for one multicast packet,
+	// name of the multicast interface
+	McastIface string `json:"mcastIface,omitempty"`
+
+	// McastPacketSize is the buffer size for one multicast packet,
 	// default is 2048
-	MCastBufferSize int `json:"mCastPacketSize,omitempty"`
+	McastPacketSize int `json:"mcastPacketSize,omitempty"`
 
 	// WriteBufferSize is the buffer size, which is used to buffer the
 	// multicast packets before writing to clients, default is 131072
@@ -110,15 +110,15 @@ func (cfg *Config) populateDefault() {
 		cfg.EPGURL = "http://epg.51zmt.top:8000/e.xml"
 	}
 
-	if cfg.MCastBufferSize == 0 {
-		cfg.MCastBufferSize = 2048
+	if cfg.McastPacketSize == 0 {
+		cfg.McastPacketSize = 2048
 	}
 
 	if cfg.WriteBufferSize == 0 {
 		cfg.WriteBufferSize = 131072
 	}
 
-	if cfg.ServerAddr != "" && cfg.MulticastInterface != "" {
+	if cfg.ServerAddr != "" && cfg.McastIface != "" {
 		return
 	}
 
@@ -141,9 +141,9 @@ func (cfg *Config) populateDefault() {
 	if len(m) == 1 {
 		if cfg.ServerAddr == "" {
 			cfg.ServerAddr = findBestIP(m) + ":7709"
-		} else if cfg.MulticastInterface == "" {
+		} else if cfg.McastIface == "" {
 			for iface := range m {
-				cfg.MulticastInterface = iface
+				cfg.McastIface = iface
 			}
 		}
 		return
@@ -151,8 +151,8 @@ func (cfg *Config) populateDefault() {
 
 	// if multicast interface is configured, remove it so that the http server
 	// won't use it
-	if cfg.MulticastInterface != "" {
-		delete(m, cfg.MulticastInterface)
+	if cfg.McastIface != "" {
+		delete(m, cfg.McastIface)
 	}
 
 	// try configure the http server address
@@ -161,7 +161,7 @@ func (cfg *Config) populateDefault() {
 	}
 
 	// try configure the multicast interface
-	if cfg.MulticastInterface == "" {
+	if cfg.McastIface == "" {
 	IFACE_LOOP:
 		for iface, ips := range m {
 			for _, ip := range ips {
@@ -173,7 +173,7 @@ func (cfg *Config) populateDefault() {
 			}
 		}
 		for iface := range m {
-			cfg.MulticastInterface = iface
+			cfg.McastIface = iface
 			break
 		}
 	}
@@ -294,8 +294,8 @@ func saveConfig(cfg *Config, chGrps []ChannelGroup) error {
 	return nil
 }
 
-// apigetConfig returns the current configuration
-func apigetConfig(w http.ResponseWriter, r *http.Request) {
+// apiGetConfig returns the current configuration
+func apiGetConfig(w http.ResponseWriter, r *http.Request) {
 	cfg := getConfig()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(cfg)

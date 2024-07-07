@@ -63,3 +63,27 @@ export const getEpg = (channel: string) => {
 			return [];
 		});
 }
+
+export type Config = {
+	serverAddr: string;
+	epgURL: string;
+	mcastIface: string;
+	mcastPacketSize: number;
+	writeBufferSize: number;
+}
+
+export const getConfig = () => {
+	return axios.get<Config>('/api/config').then(res => res.data);
+}
+
+export const listInterfaceAndIPs = () => {
+	return axios.get<Map<string, string[]>>('/api/interfaces-and-ips').then(res => res.data);
+}
+
+export const updateConfig = (config: Config) => {
+	return axios.put('/api/config', config);
+}
+
+export const restart = () => {
+	return axios.post('/api/restart');
+}
