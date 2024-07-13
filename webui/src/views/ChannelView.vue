@@ -29,31 +29,7 @@
 								<a-input v-model:value="ch.logo" />
 							</a-form-item>
 
-							<a-row :gutter="10" v-for="(_, i) in ch.sources">
-								<a-col :span="18">
-									<a-form-item :label="`节目源${i}`" :labelCol="{span: 4}">
-										<a-input v-model:value="ch.sources[i]" />
-									</a-form-item>
-								</a-col>
-								<a-col :span="6">
-									<a-button type="link" @click="onVerifySource(ch.sources[i])">测试</a-button>
-									<a-button type="link" danger @click="onDeleteSource(ch, i)">删除</a-button>
-								</a-col>
-							</a-row>
-
-							<a-row :gutter="10">
-								<a-col :span="18">
-									<a-form-item label="新节目源：" :labelCol="{span: 4}">
-										<a-input v-model:value="newSource" />
-									</a-form-item>
-								</a-col>
-								<a-col :span="6">
-									<a-button-group>
-										<a-button type="link" @click="onVerifySource(newSource)">测试</a-button>
-										<a-button type="link" @click="onAddSource(ch)">添加</a-button>
-									</a-button-group>
-								</a-col>
-							</a-row>
+							<source-list :sources="ch.sources" :newSource="newSource" @verify="onVerifySource" />
 						</a-tab-pane>
 					</a-tabs>
 				</a-tab-pane>
@@ -62,34 +38,22 @@
 		<a-col :span="10">
 			<a-affix :offset-top="120">
 				<MpegTsPlayer :src="source" width="98%" />
+				<a-flex justify="space-evenly">
+					<a-button>导入频道列表</a-button>
+					<a-button>导出频道列表</a-button>
+				</a-flex>
 			</a-affix>
 		</a-col>
 	</a-row>
 </template>
 
 <script setup lang="ts">
-/*
-								<a-row :gutter="10">
-									<a-col :span="18">
-										<a-form-item>
-											<a-input v-model:value="newSource" />
-										</a-form-item>
-									</a-col>
-									<a-col :span="8">
-										<a-button-group>
-											<a-button :icon="h(PlaySquareOutlined)" @click="onVerifySource(newSource)" />
-											<a-button :icon="h(PlusSquareOutlined)" @click="onAddSource(ch)" />
-										</a-button-group>
-									</a-col>
-								</a-row>
-								*/
-import { /*h,*/ ref, onMounted } from 'vue';
-// import { DeleteOutlined, PlaySquareOutlined, PlusSquareOutlined } from '@ant-design/icons-vue';
-import {App} from 'ant-design-vue';
+import { ref, onMounted } from 'vue';
+import { App } from 'ant-design-vue';
 
 import { Channel, ChannelGroup, listChannelGroups } from '../api/iptv';
 import MpegTsPlayer from '../components/MpegTsPlayer.vue';
-// import Sortable from 'sortablejs';
+import SourceList from '../components/SourceList.vue';
 
 
 const groups = ref<ChannelGroup[]>([]);
@@ -162,65 +126,6 @@ const onVerifySource = (src: string) => {
 		return;
 	}
 	source.value = `/iptv/relay/${src}`;
-}
-
-const onDeleteSource = (ch: Channel, idx: number) => {
-	// TODO: confirm
-	ch.sources.splice(idx, 1);
-}
-
-/*
-const onMoveSource = (ch: Channel, idx: number, to: string) => {
-	switch (to) {
-		case 'top':
-			if(idx >0) {
-				const src = ch.sources[idx];
-				ch.sources.splice(idx, 1);
-				ch.sources.unshift(src);
-			}
-			break;
-
-		case 'up':
-			if (idx > 0) {
-				const src = ch.sources[idx];
-				const dst = ch.sources[idx - 1];
-				ch.sources[idx - 1] = src;
-				ch.sources[idx] = dst;
-			}
-			break;
-
-		case 'down':
-			if (idx < ch.sources.length - 1) {
-				const src = ch.sources[idx];
-				const dst = ch.sources[idx + 1];
-				ch.sources[idx + 1] = src;
-				ch.sources[idx] = dst;
-			}
-			break;
-
-		case 'bottom':
-			if (idx < ch.sources.length - 1) {
-				const src = ch.sources[idx];
-				ch.sources.splice(idx, 1);
-				ch.sources.push(src);
-			}
-			break;
-	}
-}
-*/
-
-const onAddSource = (ch: Channel) => {
-	if (!newSource.value) {
-		return;
-	}
-	for (const src of ch.sources) {
-		if (src === newSource.value) {
-			// TODO: alert
-			return
-		}
-	}
-	ch.sources.push(newSource.value);
-	newSource.value = '';
 }
 
 </script>
