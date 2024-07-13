@@ -1,83 +1,118 @@
+<template>
+	<a-table :columns="columns" :dataSource="conns" size="middle" bordered>
+		<template #bodyCell="{ text, record, column }">
+			<template v-if="column.key.endsWith('reatedAt')">
+				{{ dayjs(text).format('YYYY-MM-DD HH:mm:ss') }}
+			</template>
+			<template v-else-if="column.key === 'action'">
+				<a-button type="link" @click="dropConnection(record.addr)">断开</a-button>
+			</template>
+			<template v-else-if="column.key === 'clientAction'">
+				<a-button type="link" @click="dropClient(record.addr, record.clientAddr)">断开</a-button>
+			</template>
+			<template v-else>
+				{{ text }}
+			</template>
+		</template>
+	</a-table>
+</template>
+
 <script setup lang="ts">
 import { ref } from 'vue';
-import {RelayConnection, listRelayConnections, dropRelayConnection, dropRelayClient} from '../api/iptv';
+import dayjs from 'dayjs';
+import { listRelayConnections, dropRelayConnection, dropRelayClient } from '../api/iptv';
 
-const conns = ref<RelayConnection[]>([]);
+type Connection = {
+	addr: string;
+	span: number;
+	createdAt: string;
+	clientAddr: string;
+	clientCreatedAt: string;
+};
 
-listRelayConnections().then((data) => {
-	conns.value = data;
-});
+const conns = ref<Connection[]>([]);
+
+const columns = ref([
+	{
+		title: '组播地址',
+		dataIndex: 'addr',
+		key: 'addr',
+		align: 'center',
+		customCell: (_: any, index: number) => ({
+			rowSpan: conns.value[index].span,
+		}),
+	},
+	{
+		title: '创建时间',
+		dataIndex: 'createdAt',
+		key: 'createdAt',
+		align: 'center',
+		customCell: (_: any, index: number) => ({
+			rowSpan: conns.value[index].span,
+		}),
+	},
+	{
+		title: '客户端',
+		key: 'clients',
+		align: 'center',
+		children: [
+			{
+				title: '地址',
+				key: 'clientAddr',
+				dataIndex: 'clientAddr',
+				align: 'center',
+			},
+			{
+				title: '创建时间',
+				key: 'clientCreatedAt',
+				dataIndex: 'clientCreatedAt',
+				align: 'center',
+			},
+			{
+				title: '操作',
+				key: 'clientAction',
+				align: 'center',
+			},
+		],
+	},
+	{
+		title: '操作',
+		key: 'action',
+		align: 'center',
+		customCell: (_: any, index: number) => ({
+			rowSpan: conns.value[index].span,
+		}),
+	},
+]);
+
+const refresh = () => {
+	listRelayConnections().then((data) => {
+		const list: Connection[] = [];
+		for (const conn of data) {
+			let span = conn.clients.length;
+			for (const client of conn.clients) {
+				list.push({
+					addr: conn.addr,
+					span: span,
+					createdAt: conn.createdAt,
+					clientAddr: client.addr,
+					clientCreatedAt: client.createdAt,
+				} as Connection);
+				span = 0;
+			}
+		}
+		conns.value = list;
+	});
+}
 
 const dropConnection= (addr: string) => {
-	dropRelayConnection(addr).then(() => {
-		conns.value = conns.value.filter((conn) => conn.addr !== addr);
-	});
+	dropRelayConnection(addr).then(refresh);
 }
 
 const dropClient = (addr: string, clientAddr: string) => {
-	dropRelayClient(addr, clientAddr).then(() => {
-		conns.value = conns.value.map((conn) => {
-			if (conn.addr === addr) {
-				conn.clients = conn.clients.filter((client) => client.addr !== clientAddr);
-			}
-			return conn;
-		});
-	});
+	dropRelayClient(addr, clientAddr).then(refresh);
 }
 
-</script>
+refresh();
 
-<template>
-	<table border="1" width="100%">
-		<thead>
-			<tr>
-				<th rowspan="2">Address</th>
-				<th rowspan="2">Created At</th>
-				<th colspan="3">Clients</th>
-				<th rowspan="2">Actions</th>
-			</tr>
-			<tr>
-				<th>Address</th>
-				<th>Created At</th>
-				<th>Actions</th>
-			</tr>
-		</thead>
-		<tbody>
-			<template v-for="conn in conns">
-				<tr>
-					<td :rowspan="conn.clients.length">
-						{{ conn.addr }}
-					</td>
-					<td :rowspan="conn.clients.length">
-						{{ conn.createdAt }}
-					</td>
-					<td>
-						{{ conn.clients[0].addr}}
-					</td>
-					<td>
-						{{ conn.clients[0].createdAt}}
-					</td>
-					<td>
-						<button @click="dropClient(conn.addr, conn.clients[0].addr)">Delete</button>
-					</td>
-					<td :rowspan="conn.clients.length">
-						<button @click="dropConnection(conn.addr)">Delete</button>
-					</td>
-				</tr>
-				<template v-for="(client,i) in conn.clients">
-					<tr v-if="i > 0">
-						<td>
-							{{ client.addr }}
-						</td>
-						<td>
-							{{ client.createdAt }}
-						</td>
-						<td>
-							<button @click="dropClient(conn.addr, client.addr)">Delete</button>
-						</td>
-					</tr>
-				</template>
-			</template>
-		</tbody>
-	</table>
-</template>
+</script>
