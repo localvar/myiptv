@@ -51,7 +51,7 @@
 import { ref, onMounted } from 'vue';
 import { App } from 'ant-design-vue';
 
-import { Channel, ChannelGroup, listChannelGroups } from '../api/iptv';
+import { /*Channel,*/ ChannelGroup, listChannelGroups } from '../api/iptv';
 import MpegTsPlayer from '../components/MpegTsPlayer.vue';
 import SourceList from '../components/SourceList.vue';
 

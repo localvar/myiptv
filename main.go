@@ -4,12 +4,15 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"io/fs"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -63,7 +66,22 @@ func main() {
 
 	// the website
 	dist, _ := fs.Sub(website, "webui/dist")
-	http.Handle("GET /", http.FileServerFS(dist))
+	http.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		upath := r.URL.Path
+		if !strings.HasPrefix(upath, "/") {
+			upath = "/" + upath
+			r.URL.Path = upath
+		}
+		upath = path.Clean(upath)
+
+		if f, err := http.FS(dist).Open(upath); err == nil {
+			f.Close()
+		} else if errors.Is(err, fs.ErrNotExist) {
+			upath = "/"
+		}
+
+		http.ServeFileFS(w, r, dist, upath)
+	})
 
 	// APIs to manage the relay server
 	http.HandleFunc("POST /api/restart", apiRestart)

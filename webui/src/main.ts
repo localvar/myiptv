@@ -10,6 +10,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/status', component: () => import('./views/StatusView.vue') },
   { path: '/config', component: () => import('./views/ConfigView.vue') },
   { path: '/about', component: () => import('./views/AboutView.vue') },
+  { path: '/:pathMatch(.*)', component: () => import('./views/NotFound.vue') },
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })
