@@ -7,7 +7,7 @@
 						<MenuOutlined style="cursor: grab" />
 					</template>
 					<template #description>
-						<a-typography-text v-model:content="sources[index]" editable />
+						<a-typography-text v-model:content="clonedSources[index]" :editable="{onChange: onSourceChange, onEnd: () => onSourceUpdated(index)}"/>
 					</template>
 				</a-list-item-meta>
 
@@ -19,7 +19,7 @@
 				</template>
 			</a-list-item>
 		</template>
-		<template v-if="newSource !== undefined" #footer>
+		<template #footer>
 			<a-flex>
 				<a-input v-model:value="newSource" style="width: 490px"/>
 				<a-space-compact size="small">
@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineModel, onMounted } from 'vue';
+import { ref, defineModel, onMounted, computed } from 'vue';
 import { MenuOutlined } from '@ant-design/icons-vue';
 import { App } from 'ant-design-vue'
 import Sortable from 'sortablejs';
@@ -40,7 +40,7 @@ import Sortable from 'sortablejs';
 const listRef = ref();
 const emit = defineEmits<{ (e: 'verify', source: string): void; }>();
 const sources = defineModel<string[]>('sources', { required: true });
-const newSource = defineModel<string>('newSource');
+const newSource = ref<string>('');
 const { message } = App.useApp();
 
 const onVerifySource = (source: string) => {
@@ -49,6 +49,26 @@ const onVerifySource = (source: string) => {
 
 const onDeleteSource = (index: number) => {
 	sources.value.splice(index, 1);
+};
+
+// clonedSources is used to enable source edit, because the key of the list item
+// is also the value of a source.
+const clonedSources = computed(() => [...sources.value]);
+const editedSource = ref<string>('');
+
+const onSourceChange = (value: any) => {
+	editedSource.value = value;
+};
+
+const onSourceUpdated = (index: number) => {
+	if (editedSource.value === sources.value[index]) {
+		return;
+	}
+	if (sources.value.includes(editedSource.value)) {
+		message.error('节目源已存在');
+		return;
+	}
+	sources.value[index] = editedSource.value;
 };
 
 const onAddSource = () => {
@@ -61,6 +81,7 @@ const onAddSource = () => {
 		return;
 	}
 	sources.value.push(source);
+	newSource.value = '';
 };
 
 onMounted(()=>{
