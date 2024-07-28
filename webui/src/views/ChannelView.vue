@@ -1,7 +1,7 @@
 <template>
 	<a-row :gutter="10">
 		<a-col :span="14">
-			<a-tabs type="editable-card" @edit="onEditChannelGroup" hide-add>
+			<a-tabs type="editable-card" @edit="onEditChannelGroup">
 				<a-tab-pane v-for="(grp, i) in groups" :tab="grp.name" :key="i" closable>
 					<channel-tab :channels="grp.channels" @verify-source="onVerifySource" />
 				</a-tab-pane>
