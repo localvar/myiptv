@@ -70,6 +70,7 @@ export type Config = {
 	mcastIface: string;
 	mcastPacketSize: number;
 	writeBufferSize: number;
+	readTimeout: number;
 }
 
 export const getConfig = () => {

@@ -23,10 +23,13 @@
 			</a-select>
 		</a-form-item>
 		<a-form-item label="组播包大小：">
-			<a-input-number v-model:value="config.mcastPacketSize" />
+			<a-input-number v-model:value="config.mcastPacketSize" addon-after="字节"/>
 		</a-form-item>
 		<a-form-item label="缓冲区大小：">
-			<a-input-number v-model:value="config.writeBufferSize" />
+			<a-input-number v-model:value="config.writeBufferSize" addon-after="字节"/>
+		</a-form-item>
+		<a-form-item label="数据接收超时：">
+			<a-input-number v-model:value="config.readTimeout" addon-after="毫秒" />
 		</a-form-item>
 
 		<a-form-item :wrapperCol="{offset: 10, span: 8}">

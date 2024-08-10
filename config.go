@@ -55,8 +55,14 @@ type Config struct {
 	McastPacketSize int `json:"mcastPacketSize,omitempty"`
 
 	// WriteBufferSize is the buffer size, which is used to buffer the
-	// multicast packets before writing to clients, default is 131072
+	// multicast packets before writing to clients, default is 131072.
+	// Note changing this value may not take effect immediately, beacuse
+	// we are using sync.Pool to manage the buffers.
 	WriteBufferSize int `json:"writeBufferSize,omitempty"`
+
+	// ReadTimeout is the timeout for read multicast packets to fill the write
+	// buffer, its unit is millisecond, default is 1000
+	ReadTimeout int `json:"readTimeout,omitempty"`
 }
 
 // Clourflare DDNS configuration
@@ -110,12 +116,16 @@ func (cfg *Config) populateDefault() {
 		cfg.EPGURL = "http://epg.51zmt.top:8000/e.xml"
 	}
 
-	if cfg.McastPacketSize == 0 {
+	if cfg.McastPacketSize <= 0 {
 		cfg.McastPacketSize = 2048
 	}
 
-	if cfg.WriteBufferSize == 0 {
+	if cfg.WriteBufferSize <= 0 {
 		cfg.WriteBufferSize = 131072
+	}
+
+	if cfg.ReadTimeout <= 0 {
+		cfg.ReadTimeout = 1000
 	}
 
 	if cfg.ServerAddr != "" && cfg.McastIface != "" {

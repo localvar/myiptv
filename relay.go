@@ -111,7 +111,7 @@ func (rb *relayBuffer) Release() {
 var relayBufPool = sync.Pool{
 	New: func() any {
 		rb := relayBuffer{}
-		rb.buf = make([]byte, 0, getConfig().McastPacketSize)
+		rb.buf = make([]byte, 0, getConfig().WriteBufferSize)
 		return &rb
 	},
 }
@@ -128,6 +128,11 @@ func (rc *relayClient) send(rb *relayBuffer) {
 	select {
 	case rc.ch <- rb:
 	default:
+		slog.Debug(
+			"write buffer full, packets discarded",
+			slog.String("address", rc.addr),
+			slog.Int("dataSize", len(rb.buf)),
+		)
 		rb.Release()
 	}
 }
@@ -199,11 +204,15 @@ func (mc *mcastConn) sendToClients(rb *relayBuffer) int {
 	return count
 }
 
-func (mc *mcastConn) receive(bufSize int, timeout time.Duration) {
+func (mc *mcastConn) setReadDeadline() {
+	to := time.Duration(getConfig().ReadTimeout) * time.Millisecond
+	mc.conn.SetReadDeadline(time.Now().Add(to))
+}
+
+func (mc *mcastConn) receive(bufSize int) {
 	rbuf := make([]byte, bufSize)
 	wbuf := newRelayBuffer()
-
-	mc.conn.SetReadDeadline(time.Now().Add(timeout))
+	mc.setReadDeadline()
 
 LOOP:
 	for {
@@ -229,7 +238,7 @@ LOOP:
 			}
 			wbuf.Release()
 			wbuf = newRelayBuffer()
-			mc.conn.SetReadDeadline(time.Now().Add(timeout))
+			mc.setReadDeadline()
 		}
 
 		wbuf.buf = append(wbuf.buf, p...)
@@ -334,8 +343,7 @@ func iptvRelay(w http.ResponseWriter, r *http.Request) {
 	if created {
 		// in this case, must call addClient before receive, or the receive
 		// goroutine may exit immediately because there is no client
-		cfg := getConfig()
-		go mc.receive(cfg.McastPacketSize, time.Second)
+		go mc.receive(getConfig().McastPacketSize)
 	}
 
 	w.Header().Set("Content-Type", "video/MP2T")
