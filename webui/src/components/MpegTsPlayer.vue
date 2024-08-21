@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted, onUpdated } from 'vue';
+import { ref, onUnmounted, onUpdated, defineExpose } from 'vue';
 import mpegts from 'mpegts.js';
 
 const emit = defineEmits(['error']);
@@ -46,6 +46,8 @@ onUpdated(() => {
 });
 
 onUnmounted(closePlayer);
+
+defineExpose({ stop: closePlayer });
 </script>
 
 <template>

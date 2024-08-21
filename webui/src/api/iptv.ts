@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export type Channel = {
+export interface Channel {
 	name: string;
 	displayName: string;
 	logo: string;
@@ -8,7 +8,7 @@ export type Channel = {
 	sources: string[];
 }
 
-export type ChannelGroup = {
+export interface ChannelGroup {
 	name: string;
 	channels: Channel[];
 }
@@ -17,12 +17,12 @@ export const listChannelGroups = () => {
 	return axios.get<ChannelGroup[]>('/api/channel-groups').then(res => res.data);
 }
 
-export type RelayClient = {
+export interface RelayClient {
 	addr: string;
 	createdAt: string;
 }
 
-export type RelayConnection = {
+export interface RelayConnection {
 	addr: string;
 	createdAt: string;
 	clients: RelayClient[];
@@ -40,7 +40,7 @@ export const dropRelayClient = (addr: string, clientAddr: string) => {
 	return axios.delete(`/api/relays/${addr}/${clientAddr}`);
 }
 
-export type Programme = {
+export interface Programme {
 	title: string;
 	start: Date;
 	end: Date;
@@ -64,7 +64,7 @@ export const getEpg = (channel: string) => {
 		});
 }
 
-export type Config = {
+export interface Config {
 	serverAddr: string;
 	epgURL: string;
 	mcastIface: string;

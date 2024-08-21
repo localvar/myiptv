@@ -1,5 +1,5 @@
 <template>
-	<a-list ref="listRef" :data-source="sources" header="节目源" bordered size="small">
+	<a-list ref="listRef" :data-source="sources" bordered size="small">
 		<template #renderItem="{ item, index }">
 			<a-list-item :key="item">
 				<a-list-item-meta>
@@ -10,21 +10,28 @@
 						<a-typography-text v-model:content="clonedSources[index]" :editable="{onChange: onSourceChange, onEnd: () => onSourceUpdated(index)}"/>
 					</template>
 				</a-list-item-meta>
-
 				<template #actions>
 					<a-space-compact size="small">
-						<a-button type="link" @click="onVerifySource(sources[index])">测试</a-button>
-						<a-button type="link" danger @click="onDeleteSource(index)">删除</a-button>
+						<a-tooltip title="测试">
+							<a-button type="link" :icon="h(CaretRightOutlined)" @click="onVerifySource(sources[index])" />
+						</a-tooltip>
+						<a-tooltip title="删除">
+							<a-button type="link" :icon="h(DeleteOutlined)" danger @click="onDeleteSource(index)" />
+						</a-tooltip>
 					</a-space-compact>
 				</template>
 			</a-list-item>
 		</template>
 		<template #footer>
 			<a-flex>
-				<a-input v-model:value="newSource" style="width: 490px"/>
+				<a-input v-model:value="newSource" style="width: 422px"/>
 				<a-space-compact size="small">
-					<a-button type="link" @click="onVerifySource(newSource)">测试</a-button>
-					<a-button type="link" @click="onAddSource">添加</a-button>
+					<a-tooltip title="测试">
+						<a-button type="link" :icon="h(CaretRightOutlined)" @click="onVerifySource(newSource)" />
+					</a-tooltip>
+					<a-tooltip title="添加">
+						<a-button type="link" :icon="h(PlusOutlined)" @click="onAddSource" />
+					</a-tooltip>
 				</a-space-compact>
 			</a-flex>
 		</template>
@@ -32,16 +39,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineModel, onMounted, computed } from 'vue';
-import { MenuOutlined } from '@ant-design/icons-vue';
+import { ref, h, defineModel, computed, watch, nextTick, onMounted } from 'vue';
+import { CaretRightOutlined, DeleteOutlined, MenuOutlined, PlusOutlined } from '@ant-design/icons-vue';
 import { App } from 'ant-design-vue'
 import Sortable from 'sortablejs';
 
-const listRef = ref();
+const { message } = App.useApp();
 const emit = defineEmits<{ (e: 'verify', source: string): void; }>();
+
+const listRef = ref();
 const sources = defineModel<string[]>('sources', { required: true });
 const newSource = ref<string>('');
-const { message } = App.useApp();
+const sortable = ref<Sortable | null>();
 
 const onVerifySource = (source: string) => {
 	emit('verify', source);
@@ -84,17 +93,33 @@ const onAddSource = () => {
 	newSource.value = '';
 };
 
-onMounted(()=>{
-	const el = listRef.value.$el.getElementsByClassName('ant-list-items')[0];
-	new Sortable( el, {
-		handle: '.ant-list-item-meta-avatar',
-		onEnd: (evt: Sortable.SortableEvent) => {
-			if (evt.newIndex !== evt.oldIndex) {
-				const item = sources.value.splice(evt.oldIndex!, 1)[0];
-				sources.value.splice(evt.newIndex!, 0, item);
-			}
-		},
-	});
-});
+const createSortable = (srcs: string[]) => {
+	if (srcs.length === 0) {
+		sortable.value?.destroy();
+		sortable.value = null;
+		return;
+	}
 
+	nextTick(() => {
+		if (sortable.value) {
+			return;
+		}
+		const el = listRef.value.$el.getElementsByClassName('ant-list-items')[0];
+		if (!el) {
+			return;
+		}
+		sortable.value = new Sortable( el, {
+			handle: '.ant-list-item-meta-avatar',
+			onEnd: (evt: Sortable.SortableEvent) => {
+				if (evt.newIndex !== evt.oldIndex) {
+					const item = sources.value.splice(evt.oldIndex!, 1)[0];
+					sources.value.splice(evt.newIndex!, 0, item);
+				}
+			},
+		});
+	});
+};
+
+onMounted(() => createSortable(sources.value));
+watch(() => sources.value, createSortable, { deep: true });
 </script>
