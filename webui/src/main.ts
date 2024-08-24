@@ -4,7 +4,7 @@ import App from './App.vue'
 import { RouteRecordRaw, createWebHistory, createRouter } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
-  { path: '/', component: () => import('./views/HomeView.vue') },
+  { path: '/', redirect: '/watch' },
   { path: '/watch', component: () => import('./views/WatchView.vue') },
   { path: '/channel', component: () => import('./views/ChannelView.vue') },
   { path: '/status', component: () => import('./views/StatusView.vue') },

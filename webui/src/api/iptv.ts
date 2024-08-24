@@ -6,6 +6,8 @@ export interface Channel {
 	logo: string;
 	hide: boolean;
 	sources: string[];
+
+	selected?: boolean; // this field is only used in the frontend.
 }
 
 export interface ChannelGroup {
@@ -14,7 +16,31 @@ export interface ChannelGroup {
 }
 
 export const listChannelGroups = () => {
-	return axios.get<ChannelGroup[]>('/api/channel-groups').then(res => res.data);
+	return axios.get<ChannelGroup[]>('/api/channel-groups')
+		.then(res => {
+			res.data.forEach(g => {
+				if (!g.channels) {
+					g.channels = [];
+				} else {
+					g.channels.forEach(c => !c.sources && (c.sources = []));
+				}});
+			return res.data;
+		});
+}
+
+export const updateChannelGroups = (groups: ChannelGroup[]) => {
+	groups = groups.map(g => ({
+		name: g.name,
+		channels: g.channels.map(c => ({
+			name: c.name,
+			displayName: c.displayName,
+			logo: c.logo,
+			hide: c.hide,
+			sources: c.sources
+		}))
+	}));
+
+	return axios.put('/api/channel-groups', groups);
 }
 
 export interface RelayClient {
