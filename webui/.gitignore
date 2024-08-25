@@ -4,5 +4,4 @@ dist/
 auto-imports.d.ts
 components.d.ts
 vite-env.d.ts
-pnpm-lock.yaml
 package-lock.json
