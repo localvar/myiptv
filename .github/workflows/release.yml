@@ -34,13 +34,13 @@ jobs:
       env:
         GOARCH: amd64
         GOOS: linux
-      run: go build -o myiptv-${{ steps.get_version.outputs.VERSION }}-linux.amd64
+      run: go build -ldflags "-s -w -X main.Version=${{ steps.get_version.outputs.VERSION }}" -o myiptv-${{ steps.get_version.outputs.VERSION }}-linux.amd64
 
     - name: Build for ARM64
       env:
         GOARCH: arm64
         GOOS: linux
-      run: go build -o myiptv-${{ steps.get_version.outputs.VERSION }}-linux.arm64
+      run: go build -ldflags "-s -w -X main.Version=${{ steps.get_version.outputs.VERSION }}" -o myiptv-${{ steps.get_version.outputs.VERSION }}-linux.arm64
 
     - name: Release
       uses: softprops/action-gh-release@v2

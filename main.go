@@ -20,6 +20,9 @@ import (
 //go:embed all:webui/dist
 var website embed.FS
 
+// set by the build script
+var Version string
+
 var shutdown func(restart bool)
 
 func run() {
@@ -61,6 +64,8 @@ func main() {
 		log.SetFlags(0)
 	}
 
+	slog.Info("MyIPTV", slog.String("version", Version))
+
 	loadConfig()
 	initDDNS()
 
@@ -82,6 +87,9 @@ func main() {
 
 		http.ServeFileFS(w, r, dist, upath)
 	})
+
+	// a simple file server for the 'files' directory as an add-on feature
+	http.Handle("GET /files/", http.StripPrefix("/files", http.FileServer(http.Dir("files"))))
 
 	// APIs to manage the relay server
 	http.HandleFunc("POST /api/restart", apiRestart)
