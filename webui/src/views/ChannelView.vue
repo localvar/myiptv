@@ -81,14 +81,14 @@
 						</template>
 
 						<template #extra>
-								<a-tooltip title="编辑频道">
-									<a-button type="text" :icon="h(SettingOutlined)" @click="onEditChannel(ch)" />
-								</a-tooltip>
+							<a-tooltip title="编辑频道">
+								<a-button type="text" :icon="h(SettingOutlined)" @click="onEditChannel(ch)" />
+							</a-tooltip>
 						</template>
 
 						<template #cover>
-							<div style="background-color: lightgrey">
-								<a-image :preview="false" v-if="ch.logo" :src="ch.logo" />
+							<div style="text-align: center; height: 150px; background-color: lightgrey">
+								<a-image v-if="ch.logo" style="margin: 0 auto; height: 150px; object-fit: contain" :preview="false" :src="ch.logo" />
 							</div>
 						</template>
 					</a-card>

@@ -14,10 +14,9 @@
 							<a-switch v-model:checked="ch.hide" />
 						</a-form-item>
 					</a-space-compact>
-					<a-card style="width: 250px; height: 150px; background-color: lightgray;" shadow="never">
-						<img v-if="ch.logo" style="width: 100%; height: 100%" :src="ch.logo"
-							fit="scale-down" alt="无法加载台标" />
-					</a-card>
+					<div style="text-align: center; width: 250px; height: 150px; background-color: lightgray">
+						<a-image v-if="ch.logo" style="margin: 0 auto; height: 150px; object-fit: scale-down;" :src="ch.logo" alt="无法加载台标" />
+					</div>
 				</a-space>
 				<a-form-item label="台标地址">
 					<a-input v-model:value="ch.logo" />
