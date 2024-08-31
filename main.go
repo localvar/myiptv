@@ -88,8 +88,8 @@ func main() {
 		http.ServeFileFS(w, r, dist, upath)
 	})
 
-	// a simple file server for the 'files' directory as an add-on feature
-	http.Handle("GET /files/", http.StripPrefix("/files", http.FileServer(http.Dir("files"))))
+	// a simple file server for the 'file' directory as an add-on feature
+	http.Handle("GET /file/", http.FileServer(http.Dir("")))
 
 	// APIs to manage the relay server
 	http.HandleFunc("POST /api/restart", apiRestart)
