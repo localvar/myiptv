@@ -371,6 +371,15 @@ RELAY_LOOP:
 
 	mc.removeClient(r.RemoteAddr)
 	cancel()
+
+	// drain the channel to release all buffers.
+	// we can close the channel here (in the reader goroutine) because we
+	// are sure that there is no writer goroutine anymore.
+	close(ch)
+	for rb := range ch {
+		rb.Release()
+	}
+
 	slog.Info(
 		"relay client removed",
 		slog.String("multicastAddress", mc.addr),
