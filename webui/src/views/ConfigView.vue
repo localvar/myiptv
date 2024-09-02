@@ -12,7 +12,7 @@
 				<a-input-number :min="1" :max="65535" v-model:value="selectedPort" />
 			</a-space-compact>
 		</a-form-item>
-		<a-form-item label="电子节目单地址：">
+		<a-form-item label="源电子节目单：">
 			<a-input v-model:value="config.epgURL" />
 		</a-form-item>
 		<a-form-item label="组播网卡：">
@@ -41,11 +41,21 @@
 				<a-button type="link" danger>重启服务</a-button>
 			</a-popconfirm>
 		</a-form-item>
+
+		<a-form-item label="频道列表（TEXT）">
+			<a-typography-link :href="txtChList" :copyable="{text: txtChList}"> {{txtChList}} </a-typography-link>
+		</a-form-item>
+		<a-form-item label="频道列表（M3U8）">
+			<a-typography-link :href="m3uChList" :copyable="{text: m3uChList}"> {{m3uChList}} </a-typography-link>
+		</a-form-item>
+		<a-form-item label="电子节目单（JSON）">
+			<a-typography-link :href="jsonEpg" :copyable="{text: jsonEpg}"> {{jsonEpg}} </a-typography-link>
+		</a-form-item>
 	</a-form>	
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue';
+import {ref, computed} from 'vue';
 import {App} from 'ant-design-vue';
 import { Config, getConfig, updateConfig, listInterfaceAndIPs, restart } from '../api/iptv';
 
@@ -59,6 +69,10 @@ const selectedPort = ref(7709);
 listInterfaceAndIPs().then((o) => {
 	ifaceAndIPs.value = o;
 });
+
+const txtChList = computed(() => `http://${selectedIP.value}:${selectedPort.value}/iptv/channels`);
+const m3uChList = computed(() => `http://${selectedIP.value}:${selectedPort.value}/iptv/channels?fmt=m3u8`);
+const jsonEpg = computed(() => `http://${selectedIP.value}:${selectedPort.value}/iptv/epg`);
 
 const onSave = () => {
 	config.value.serverAddr = `${selectedIP.value}:${selectedPort.value}`;
